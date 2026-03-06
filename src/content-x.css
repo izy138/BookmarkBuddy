@@ -1,0 +1,37 @@
+/* BookmarkBuddy - X.com Toast Notification */
+#bb-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  z-index: 999999;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+#bb-toast.bb-toast-show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+#bb-toast.bb-toast-hide {
+  opacity: 0;
+  transform: translateX(-50%) translateY(10px);
+}
+
+.bb-toast-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #1a1f2e;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 12px;
+  padding: 12px 20px;
+  color: #e2e8f0;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+}

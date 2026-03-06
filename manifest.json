@@ -1,0 +1,50 @@
+{
+  "manifest_version": 3,
+  "name": "BookmarkBuddy",
+  "version": "1.0.0",
+  "description": "A modern, visual bookmarks manager with smart categorization, favorites, duplicate detection, and X/Twitter integration.",
+  "permissions": [
+    "bookmarks",
+    "storage",
+    "contextMenus",
+    "activeTab",
+    "sidePanel"
+  ],
+  "host_permissions": [
+    "https://x.com/*",
+    "https://twitter.com/*"
+  ],
+  "action": {
+    "default_popup": "src/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "side_panel": {
+    "default_path": "src/sidepanel.html"
+  },
+  "background": {
+    "service_worker": "src/background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://x.com/*", "https://twitter.com/*"],
+      "js": ["src/content-x.js"],
+      "css": ["src/content-x.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://x.com/i/bookmarks*"],
+      "js": ["src/content-x-bookmarks.js"],
+      "css": ["src/content-x.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

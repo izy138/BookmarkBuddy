@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BookmarkBuddy</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0b1121;
+      color: #f1f5f9;
+      font-family: 'DM Sans', -apple-system, sans-serif;
+      min-height: 100vh;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0; pointer-events: none;
+      background: radial-gradient(ellipse at 20% 0%, rgba(99,102,241,0.08) 0%, transparent 60%),
+                  radial-gradient(ellipse at 80% 100%, rgba(236,72,153,0.05) 0%, transparent 60%);
+    }
+
+    .container { position: relative; max-width: 1240px; margin: 0 auto; padding: 32px 28px; }
+
+    /* Header */
+    .page-header { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; }
+    .logo-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .page-header h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; }
+    .page-header .subtitle { color: #64748b; font-size: 14px; }
+    .header-settings {
+      margin-left: auto; display: flex; gap: 8px; align-items: center;
+    }
+    .header-settings label {
+      display: flex; align-items: center; gap: 6px;
+      color: #94a3b8; font-size: 12px; cursor: pointer;
+    }
+    .header-settings input[type="checkbox"] { accent-color: #6366f1; }
+    .import-x-btn {
+      display: flex; align-items: center; gap: 7px;
+      padding: 8px 16px; background: rgba(29,155,240,0.12);
+      border: 1px solid rgba(29,155,240,0.25); border-radius: 10px;
+      color: #1d9bf0; cursor: pointer; font-size: 13px; font-weight: 600;
+      font-family: 'DM Sans', sans-serif; transition: all 0.15s;
+    }
+    .import-x-btn:hover { background: rgba(29,155,240,0.2); border-color: rgba(29,155,240,0.4); }
+
+    .import-instructions { margin-bottom: 20px; }
+    .import-step {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 8px 0; color: #94a3b8; font-size: 13px; line-height: 1.5;
+    }
+    .import-step strong { color: #e2e8f0; }
+    .import-step code {
+      background: rgba(255,255,255,0.06); padding: 1px 6px; border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #a5b4fc;
+    }
+    .step-num {
+      width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+      background: rgba(99,102,241,0.15); color: #a5b4fc;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+    }
+
+    .import-dropzones { display: flex; gap: 12px; margin-bottom: 20px; }
+    .import-dropzone {
+      flex: 1; padding: 20px; border: 2px dashed rgba(255,255,255,0.1);
+      border-radius: 14px; text-align: center; cursor: pointer;
+      transition: all 0.2s; background: rgba(255,255,255,0.02);
+    }
+    .import-dropzone:hover, .import-dropzone.dragover {
+      border-color: rgba(29,155,240,0.4); background: rgba(29,155,240,0.05);
+    }
+    .import-dropzone.has-file {
+      border-color: rgba(16,185,129,0.4); background: rgba(16,185,129,0.05);
+    }
+    .dropzone-icon { color: #64748b; margin-bottom: 8px; }
+    .import-dropzone.has-file .dropzone-icon { color: #10b981; }
+    .dropzone-label { font-size: 14px; font-weight: 600; color: #f1f5f9; margin-bottom: 4px; }
+    .dropzone-hint { font-size: 11px; color: #64748b; }
+    .dropzone-hint code {
+      background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 3px;
+      font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #94a3b8;
+    }
+    .dropzone-status {
+      margin-top: 8px; font-size: 12px; font-weight: 600; color: #10b981; min-height: 18px;
+    }
+
+    .import-summary {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 16px; background: rgba(16,185,129,0.08);
+      border-radius: 10px; margin-bottom: 16px;
+      border: 1px solid rgba(16,185,129,0.2);
+      color: #6ee7b7; font-size: 13px;
+    }
+    .import-summary-icon { flex-shrink: 0; display: flex; }
+
+    .import-progress { margin-bottom: 16px; }
+    .progress-bar {
+      width: 100%; height: 6px; background: rgba(255,255,255,0.06);
+      border-radius: 3px; overflow: hidden; margin-bottom: 8px;
+    }
+    .progress-fill {
+      height: 100%; width: 0%; background: linear-gradient(90deg, #6366f1, #1d9bf0);
+      border-radius: 3px; transition: width 0.3s ease;
+    }
+    .progress-text { font-size: 12px; color: #94a3b8; }
+
+    .import-tabs {
+      display: flex; gap: 4px; margin-bottom: 18px;
+      background: rgba(255,255,255,0.03); border-radius: 10px; padding: 3px;
+    }
+    .import-tab {
+      flex: 1; padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer;
+      background: transparent; color: #64748b; font-size: 13px; font-weight: 600;
+      font-family: 'DM Sans', sans-serif; transition: all 0.15s;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .import-tab.active { background: rgba(29,155,240,0.15); color: #1d9bf0; }
+    .import-tab:hover:not(.active) { color: #94a3b8; }
+
+    .import-tab-content { display: none; }
+    .import-tab-content.active { display: block; }
+
+    .import-method-badge {
+      display: inline-block; padding: 3px 10px; border-radius: 6px;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.03em;
+      text-transform: uppercase; margin-bottom: 10px;
+    }
+    .import-method-badge.scrape {
+      background: rgba(99,102,241,0.12); color: #a5b4fc;
+    }
+    .import-method-badge.file {
+      background: rgba(16,185,129,0.12); color: #6ee7b7;
+    }
+
+    .import-desc {
+      color: #94a3b8; font-size: 13px; line-height: 1.5; margin-bottom: 16px;
+    }
+
+    .open-x-bookmarks-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 14px; margin-top: 8px;
+      background: rgba(29,155,240,0.1); border: 1px solid rgba(29,155,240,0.25);
+      border-radius: 12px; color: #1d9bf0; cursor: pointer;
+      font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+      transition: all 0.2s;
+    }
+    .open-x-bookmarks-btn:hover {
+      background: rgba(29,155,240,0.18); border-color: rgba(29,155,240,0.4);
+      transform: translateY(-1px); box-shadow: 0 4px 20px rgba(29,155,240,0.15);
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex; gap: 4px; margin-bottom: 20px;
+      background: rgba(255,255,255,0.03); border-radius: 14px; padding: 4px; width: fit-content;
+      flex-wrap: wrap; max-width: 100%;
+    }
+    .tab {
+      padding: 8px 18px; border-radius: 10px; border: none; cursor: pointer;
+      background: transparent; color: #64748b; font-size: 13px; font-weight: 600;
+      font-family: 'DM Sans', sans-serif; transition: all 0.15s;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .tab.active { background: rgba(99,102,241,0.15); color: #a5b4fc; }
+    .tab-badge {
+      background: rgba(255,255,255,0.06); padding: 1px 8px; border-radius: 6px; font-size: 11px;
+    }
+    .tab.active .tab-badge { background: rgba(99,102,241,0.3); }
+    .tab-warn { color: #f59e0b; display: flex; align-items: center; }
+
+    .tab-divider {
+      width: 1px; height: 24px; background: rgba(255,255,255,0.08); margin: 0 4px; flex-shrink: 0;
+    }
+    .tab-x.active { background: rgba(29,155,240,0.15); color: #1d9bf0; }
+    .tab-x .tab-badge { background: rgba(29,155,240,0.12); }
+    .tab-x.active .tab-badge { background: rgba(29,155,240,0.3); }
+
+    .folder-badge {
+      padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    /* Duplicate group styles */
+    .grid-dupes { display: flex; flex-direction: column; gap: 8px; }
+    .dupe-group {
+      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 14px; overflow: hidden;
+    }
+    .dupe-group-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 18px; cursor: pointer; transition: background 0.15s;
+    }
+    .dupe-group-header:hover { background: rgba(255,255,255,0.03); }
+    .dupe-group-left { display: flex; align-items: center; gap: 10px; }
+    .dupe-group-right { display: flex; align-items: center; gap: 8px; }
+    .dupe-chevron {
+      transition: transform 0.2s; flex-shrink: 0; color: #64748b;
+    }
+    .dupe-group-header.expanded .dupe-chevron { transform: rotate(90deg); }
+    .dupe-group-domain { font-size: 14px; font-weight: 600; color: #f1f5f9; }
+    .dupe-group-count {
+      font-size: 12px; color: #64748b; background: rgba(255,255,255,0.06);
+      padding: 2px 10px; border-radius: 6px;
+    }
+    .dupe-select-all {
+      background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2);
+      border-radius: 8px; color: #a5b4fc; cursor: pointer; padding: 5px 12px;
+      font-size: 12px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+      transition: all 0.15s;
+    }
+    .dupe-select-all:hover { background: rgba(99,102,241,0.2); }
+    .dupe-group-items {
+      display: none; padding: 0 12px 12px;
+    }
+    .dupe-group-items.show {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 10px;
+    }
+
+    /* Toolbar */
+    .toolbar { display: flex; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; align-items: center; }
+    .search-wrap { position: relative; flex: 1 1 280px; max-width: 420px; }
+    .search-icon {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      color: #64748b; display: flex;
+    }
+    .search-wrap input {
+      width: 100%; padding: 10px 50px 10px 42px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px; color: #f1f5f9; font-size: 14px; outline: none;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .search-wrap input::placeholder { color: #475569; }
+    .search-wrap kbd {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      background: rgba(255,255,255,0.06); padding: 2px 8px; border-radius: 6px;
+      font-size: 11px; color: #64748b; border: 1px solid rgba(255,255,255,0.08);
+      font-family: 'DM Sans', sans-serif;
+    }
+    .toolbar select {
+      padding: 10px 14px; background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;
+      color: #f1f5f9; font-size: 13px; cursor: pointer;
+      font-family: 'DM Sans', sans-serif; outline: none;
+    }
+    .toolbar select option { background: #1e293b; }
+    .view-toggle {
+      display: flex; background: rgba(255,255,255,0.04); border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.08); overflow: hidden;
+    }
+    .view-toggle button {
+      padding: 8px 12px; background: transparent; border: none;
+      color: #64748b; cursor: pointer; display: flex; transition: all 0.15s;
+    }
+    .view-toggle button.active { background: rgba(99,102,241,0.2); color: #a5b4fc; }
+
+    /* Bulk actions */
+    .bulk-bar {
+      display: none; align-items: center; gap: 12px; padding: 10px 16px;
+      background: rgba(99,102,241,0.1); border-radius: 12px; margin-bottom: 16px;
+      border: 1px solid rgba(99,102,241,0.2);
+    }
+    .bulk-bar.show { display: flex; }
+    .bulk-bar .select-all-btn {
+      background: none; border: none; color: #a5b4fc; cursor: pointer;
+      font-size: 13px; font-family: 'DM Sans', sans-serif; font-weight: 600;
+    }
+    .bulk-bar .count { color: #64748b; font-size: 13px; }
+    .bulk-bar .spacer { flex: 1; }
+    .bulk-bar .bulk-delete {
+      display: flex; align-items: center; gap: 6px; padding: 6px 14px;
+      background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 8px; color: #fca5a5; cursor: pointer; font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    /* Info bar for duplicates */
+    .info-bar {
+      padding: 14px 18px; background: rgba(245,158,11,0.08); border-radius: 12px;
+      margin-bottom: 18px; border: 1px solid rgba(245,158,11,0.15);
+      display: none; align-items: center; gap: 10px;
+      color: #fbbf24; font-size: 13px;
+    }
+    .info-bar.show { display: flex; }
+
+    /* Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 14px;
+    }
+    .grid.list-view {
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
+
+    /* Card */
+    .card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px; padding: 18px; cursor: pointer;
+      transition: all 0.2s ease; position: relative;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .card:hover {
+      background: rgba(255,255,255,0.06);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    }
+    .card.selected { border-color: rgba(99,102,241,0.5); }
+
+    .card-top { display: flex; align-items: flex-start; gap: 12px; }
+    .card-checkbox {
+      margin-top: 6px; accent-color: #6366f1; width: 16px; height: 16px; cursor: pointer; flex-shrink: 0;
+    }
+    .card-favicon {
+      width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+      background: #1e293b; display: flex; align-items: center; justify-content: center; overflow: hidden;
+    }
+    .card-favicon img { width: 100%; height: 100%; object-fit: cover; }
+    .card-favicon .fallback { font-size: 16px; font-weight: 700; color: #fff; display: none; }
+    .card-text { flex: 1; min-width: 0; }
+    .card-title {
+      font-size: 14px; font-weight: 600; color: #f1f5f9; line-height: 1.3; margin-bottom: 3px;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .card-domain { font-size: 12px; color: #64748b; font-family: 'JetBrains Mono', monospace; }
+    .card-fav-btn {
+      background: none; border: none; cursor: pointer; padding: 4px; display: flex; flex-shrink: 0;
+    }
+
+    .card-meta { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px; }
+    .card-category {
+      padding: 3px 10px; border-radius: 8px; font-size: 11px; font-weight: 500;
+    }
+    .card-time { color: #64748b; font-size: 12px; }
+
+    .x-badge {
+      display: inline-flex; align-items: center; gap: 3px;
+      background: rgba(29,155,240,0.12); color: #1d9bf0;
+      padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600;
+    }
+    .x-preview-card {
+      padding: 10px 12px; background: rgba(29,155,240,0.06);
+      border-radius: 10px; border-left: 3px solid rgba(29,155,240,0.3);
+      font-size: 12px; color: #94a3b8; line-height: 1.4;
+    }
+    .x-author { color: #1d9bf0; font-weight: 600; font-size: 12px; margin-bottom: 3px; }
+    .x-text {
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+    }
+
+    .card-hover-actions {
+      position: absolute; top: 8px; right: 8px;
+      display: flex; gap: 2px; opacity: 0; transition: opacity 0.15s;
+      background: rgba(11,17,33,0.9); border-radius: 8px; padding: 2px;
+    }
+    .card:hover .card-hover-actions { opacity: 1; }
+    .card-hover-actions button {
+      background: none; border: none; cursor: pointer; padding: 6px; display: flex;
+      color: #94a3b8; border-radius: 6px;
+    }
+    .card-hover-actions button:hover { background: rgba(255,255,255,0.08); }
+    .card-hover-actions .del:hover { color: #ef4444; }
+
+    /* List view card override */
+    .grid.list-view .card {
+      flex-direction: row; align-items: center; padding: 12px 16px; border-radius: 12px;
+      gap: 14px;
+    }
+    .grid.list-view .card-top { flex: 1; min-width: 0; }
+    .grid.list-view .card-meta { flex-shrink: 0; }
+    .grid.list-view .x-preview-card { display: none; }
+    .grid.list-view .card-hover-actions { top: 50%; right: 8px; transform: translateY(-50%); }
+
+    /* Edit modal */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px); display: none; align-items: center;
+      justify-content: center; z-index: 1000;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: #1e293b; border-radius: 16px; padding: 28px; width: 440px;
+      max-width: 90vw; border: 1px solid rgba(255,255,255,0.08);
+    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .modal-header h3 { font-size: 18px; }
+    .modal-close {
+      background: none; border: none; color: #94a3b8; cursor: pointer; padding: 4px; display: flex;
+    }
+    .modal label {
+      display: block; color: #94a3b8; font-size: 12px; margin-bottom: 6px;
+      letter-spacing: 0.05em; text-transform: uppercase;
+    }
+    .modal input {
+      width: 100%; padding: 10px 14px; background: #0f172a;
+      border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;
+      color: #f1f5f9; font-size: 14px; margin-bottom: 16px; outline: none;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+    .modal-actions button {
+      padding: 8px 20px; border-radius: 10px; cursor: pointer;
+      font-size: 13px; font-family: 'DM Sans', sans-serif;
+    }
+    .modal-actions .cancel { background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; }
+    .modal-actions .save { background: #6366f1; border: none; color: #fff; font-weight: 600; }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;
+      padding: 10px 20px; color: #f1f5f9; font-size: 14px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.4); display: none; align-items: center; gap: 8px;
+      z-index: 2000; opacity: 0; transition: all 0.3s ease;
+    }
+    .toast.show { display: flex; opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    .empty-state { text-align: center; padding: 60px 20px; color: #64748b; grid-column: 1 / -1; }
+    .empty-state .emoji { font-size: 48px; margin-bottom: 12px; }
+    .empty-state .msg { font-size: 16px; font-weight: 600; }
+    .empty-state .sub { font-size: 14px; margin-top: 4px; }
+
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="page-header">
+      <div class="logo-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <div>
+        <h1>BookmarkBuddy</h1>
+        <div class="subtitle" id="totalCount">Loading…</div>
+      </div>
+      <div class="header-settings">
+        <label><input type="checkbox" id="autoCapture" checked> Auto-capture X bookmarks</label>
+        <button class="import-x-btn" id="importXBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Import from 𝕏
+        </button>
+      </div>
+    </div>
+
+    <!-- Chrome Bookmark Tabs -->
+    <div class="tabs">
+      <button class="tab active" data-tab="all">All Bookmarks <span class="tab-badge" id="allCount">0</span></button>
+      <button class="tab" data-tab="bar">Bookmarks Bar <span class="tab-badge" id="barCount">0</span></button>
+      <button class="tab" data-tab="other">Other <span class="tab-badge" id="otherCount">0</span></button>
+      <button class="tab" data-tab="mobile">Mobile <span class="tab-badge" id="mobileCount">0</span></button>
+      <button class="tab" data-tab="shopping">Shopping List <span class="tab-badge" id="shoppingCount">0</span></button>
+      <button class="tab" data-tab="favorites">⭐ Favorites <span class="tab-badge" id="favCount">0</span></button>
+      <span class="tab-divider"></span>
+      <button class="tab tab-x" data-tab="x-posts">𝕏 Posts <span class="tab-badge" id="xCount">0</span></button>
+      <span class="tab-divider"></span>
+      <button class="tab" data-tab="duplicates"><span class="tab-warn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span> Duplicates <span class="tab-badge" id="dupeCount">0</span></button>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="search-wrap">
+        <div class="search-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+        <input type="text" id="searchInput" placeholder="Search bookmarks…">
+        <kbd>⌘K</kbd>
+      </div>
+      <select id="categoryFilter"><option value="All">All Categories</option></select>
+      <select id="sortSelect">
+        <option value="newest">Newest First</option>
+        <option value="oldest">Oldest First</option>
+        <option value="alpha">A → Z</option>
+      </select>
+      <div class="view-toggle">
+        <button class="active" data-view="grid" title="Grid"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></button>
+        <button data-view="list" title="List"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></button>
+      </div>
+    </div>
+
+    <!-- Bulk actions -->
+    <div class="bulk-bar" id="bulkBar">
+      <button class="select-all-btn" id="selectAllBtn">Select All</button>
+      <span class="count" id="selectedCount">0 selected</span>
+      <div class="spacer"></div>
+      <button class="bulk-delete" id="bulkDelete">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        Delete Selected
+      </button>
+    </div>
+
+    <!-- Info bar -->
+    <div class="info-bar" id="infoBar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <span id="infoText"></span>
+    </div>
+
+    <!-- Bookmark grid -->
+    <div class="grid" id="bookmarkGrid"></div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Edit Bookmark</h3>
+        <button class="modal-close" id="modalClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+      <label>Title</label>
+      <input type="text" id="editTitle">
+      <label>URL</label>
+      <input type="text" id="editUrl">
+      <div class="modal-actions">
+        <button class="cancel" id="editCancel">Cancel</button>
+        <button class="save" id="editSave">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import X Modal -->
+  <div class="modal-overlay" id="importModal">
+    <div class="modal" style="width: 560px; max-height: 90vh; overflow-y: auto;">
+      <div class="modal-header">
+        <h3>Import from 𝕏 (Twitter)</h3>
+        <button class="modal-close" id="importModalClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+
+      <!-- Tab switcher -->
+      <div class="import-tabs">
+        <button class="import-tab active" data-import-tab="bookmarks">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          X Bookmarks
+        </button>
+        <button class="import-tab" data-import-tab="likes">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          X Likes
+        </button>
+      </div>
+
+      <!-- X Bookmarks tab (scrape) -->
+      <div class="import-tab-content active" id="importTabBookmarks">
+        <div class="import-method-badge scrape">Page Capture</div>
+        <p class="import-desc">X doesn't include bookmarks in their data export, so we capture them directly from your bookmarks page.</p>
+        <div class="import-instructions">
+          <div class="import-step">
+            <span class="step-num">1</span>
+            <div>Click the button below to open your X bookmarks page</div>
+          </div>
+          <div class="import-step">
+            <span class="step-num">2</span>
+            <div>A floating <strong>"Capture to BookmarkBuddy"</strong> bar will appear at the top</div>
+          </div>
+          <div class="import-step">
+            <span class="step-num">3</span>
+            <div>Scroll down to load more posts, or click <strong>"Start Auto-Scroll"</strong> to load them automatically</div>
+          </div>
+          <div class="import-step">
+            <span class="step-num">4</span>
+            <div>Click <strong>"Save All"</strong> when you're done — all captured posts will be imported</div>
+          </div>
+        </div>
+        <button class="open-x-bookmarks-btn" id="openXBookmarks">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Open x.com/i/bookmarks
+        </button>
+      </div>
+
+      <!-- X Likes tab (file import) -->
+      <div class="import-tab-content" id="importTabLikes">
+        <div class="import-method-badge file">File Import</div>
+        <p class="import-desc">Import your X likes from your data archive download.</p>
+        <div class="import-instructions">
+          <div class="import-step">
+            <span class="step-num">1</span>
+            <div>Go to <strong>X.com → Settings → Your Account → Download an archive</strong></div>
+          </div>
+          <div class="import-step">
+            <span class="step-num">2</span>
+            <div>Wait for X to prepare your archive, then download the ZIP</div>
+          </div>
+          <div class="import-step">
+            <span class="step-num">3</span>
+            <div>Unzip it and find <code>data/like.js</code></div>
+          </div>
+          <div class="import-step">
+            <span class="step-num">4</span>
+            <div>Drop the file below or click to browse</div>
+          </div>
+        </div>
+        <div class="import-dropzones">
+          <div class="import-dropzone" id="likesDropzone">
+            <input type="file" id="likesFile" accept=".js,.json" style="display:none">
+            <div class="dropzone-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </div>
+            <div class="dropzone-label">X Likes</div>
+            <div class="dropzone-hint">Drop <code>like.js</code> here or click to browse</div>
+            <div class="dropzone-status" id="likesStatus"></div>
+          </div>
+        </div>
+
+        <div class="import-summary" id="importSummary" style="display:none">
+          <div class="import-summary-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <span id="importSummaryText"></span>
+        </div>
+
+        <div class="import-progress" id="importProgress" style="display:none">
+          <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+          <span class="progress-text" id="progressText">Importing…</span>
+        </div>
+
+        <div class="modal-actions">
+          <button class="cancel" id="importCancel">Cancel</button>
+          <button class="save" id="importStart" disabled>Import Likes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+    <span id="toastMsg"></span>
+  </div>
+
+  <script src="manager.js"></script>
+</body>
+</html>
