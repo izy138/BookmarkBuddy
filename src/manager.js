@@ -14,19 +14,6 @@ const CATEGORIES = {
   "Reference": ["wikipedia", "docs.google", "notion"],
 };
 
-const CAT_COLORS = {
-  "Streaming": { bg: "#fef3c7", text: "#92400e" },
-  "Development": { bg: "#dbeafe", text: "#1e40af" },
-  "AI Tools": { bg: "#ede9fe", text: "#5b21b6" },
-  "Education": { bg: "#d1fae5", text: "#065f46" },
-  "Social": { bg: "#fce7f3", text: "#9d174d" },
-  "Communication": { bg: "#e0e7ff", text: "#3730a3" },
-  "Shopping": { bg: "#ffedd5", text: "#9a3412" },
-  "News": { bg: "#fef9c3", text: "#854d0e" },
-  "Reference": { bg: "#f0fdf4", text: "#166534" },
-  "Other": { bg: "#f3f4f6", text: "#374151" },
-};
-
 const TAB_TITLES = {
   "favorites": "Favorites",
   "all": "All Bookmarks",
@@ -141,13 +128,20 @@ async function loadBookmarks() {
     categoryFilterEl.appendChild(o);
   });
 
-  const settings = await chrome.runtime.sendMessage({ type: "GET_SETTINGS" });
-  if (settings) {
-    document.getElementById("autoCapture").checked = settings.autoCapture !== false;
-  }
+  const settings = await chrome.runtime.sendMessage({ type: "GET_SETTINGS" }) || {};
+  document.getElementById("autoCapture").checked = settings.autoCapture !== false;
+  const theme = settings.theme || "light";
+  applyTheme(theme);
+  const themeSelect = document.getElementById("themeSelect");
+  if (themeSelect) themeSelect.value = theme;
 
   updateCounts();
   render();
+}
+
+function applyTheme(theme) {
+  if (theme === "light") delete document.documentElement.dataset.theme;
+  else document.documentElement.dataset.theme = theme;
 }
 
 function updateCounts() {
@@ -266,7 +260,7 @@ function render() {
 
 function renderCard(b, isXContext = false, isTrash = false) {
   const cat = categorize(b.url);
-  const colors = CAT_COLORS[cat] || CAT_COLORS["Other"];
+  const catSlug = cat.toLowerCase().replace(/\s+/g, "-");
   const domain = getDomain(b.url);
   const isFav = favorites.has(b.id);
   const isXPost = isXContext && !isTrash;
@@ -284,14 +278,8 @@ function renderCard(b, isXContext = false, isTrash = false) {
 
   let folderBadge = "";
   if (activeTab === "all" && b.rootFolder) {
-    const folderColors = {
-      "Bookmarks Bar": { bg: "#eef4fc", text: "#2563eb" },
-      "Other Bookmarks": { bg: "#f3f4f6", text: "#6b7280" },
-      "Mobile Bookmarks": { bg: "#ecfdf5", text: "#059669" },
-      "Shopping List": { bg: "#fffbeb", text: "#d97706" },
-    };
-    const fc = folderColors[b.rootFolder] || { bg: "#f3f4f6", text: "#6b7280" };
-    folderBadge = `<span class="folder-badge" style="background:${fc.bg};color:${fc.text}">${b.rootFolder}</span>`;
+    const folderSlug = b.rootFolder.toLowerCase().replace(/\s+/g, "-");
+    folderBadge = `<span class="folder-badge folder-${folderSlug}">${escapeHtml(b.rootFolder)}</span>`;
   }
 
   const favBtn = (isXContext || isTrash) ? '' : `
@@ -319,7 +307,7 @@ function renderCard(b, isXContext = false, isTrash = false) {
         <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">
           <span class="card-time">${timeAgo(b.dateAdded)}</span>
           ${isXPost ? '<span class="x-badge">𝕏</span>' : ''}
-          <span class="card-category" style="background:${colors.bg};color:${colors.text}">${cat}</span>
+          <span class="card-category cat-${catSlug}">${cat}</span>
           ${folderBadge}
         </div>
       </div>
@@ -563,6 +551,12 @@ document.getElementById("editSave").addEventListener("click", () => {
 
 document.getElementById("autoCapture").addEventListener("change", e => {
   chrome.runtime.sendMessage({ type: "UPDATE_SETTINGS", settings: { autoCapture: e.target.checked } });
+});
+
+document.getElementById("themeSelect")?.addEventListener("change", e => {
+  const theme = e.target.value;
+  applyTheme(theme);
+  chrome.runtime.sendMessage({ type: "UPDATE_SETTINGS", settings: { theme } });
 });
 
 function getFilteredList() {

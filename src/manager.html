@@ -5,38 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BookmarkBuddy</title>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="themes.css">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-    :root {
-      --bg: #f5f5f7;
-      --sidebar-bg: #ffffff;
-      --card-bg: #ffffff;
-      --card-border: #e8e8ec;
-      --card-hover: #fafafa;
-      --text-primary: #1d1d1f;
-      --text-secondary: #6e6e73;
-      --text-tertiary: #aeaeb2;
-      --border: #e5e5ea;
-      --border-light: #f0f0f2;
-      --accent: #3a7bd5;
-      --accent-light: #eef4fc;
-      --accent-text: #2563eb;
-      --fav-color: #f59e0b;
-      --danger: #ef4444;
-      --danger-light: #fef2f2;
-      --success: #10b981;
-      --x-color: #000000;
-      --x-bg: #f7f7f8;
-      --select-accent: #dbeafe;
-      --sidebar-active: #f0f0f2;
-      --sidebar-hover: #f7f7f8;
-      --section-label: #8e8e93;
-      --badge-bg: #ececee;
-      --font: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
-      --mono: 'JetBrains Mono', ui-monospace, monospace;
-    }
-
+    /* Layout & component styles - theme variables in themes.css */
     body {
       background: var(--bg);
       color: var(--text-primary);
@@ -102,7 +75,7 @@
     .nav-item-x .nav-icon { color: var(--text-tertiary); }
     .nav-item-x.active .nav-icon { color: var(--x-color); }
     .nav-item-x.active { background: var(--x-bg); }
-    .nav-item-x.active .nav-count { background: #e8e8ea; color: #000; }
+    .nav-item-x.active .nav-count { background: var(--x-bg); color: var(--x-color); }
 
     .sidebar-footer {
       padding: 12px 14px; border-top: 1px solid var(--border-light);
@@ -111,6 +84,13 @@
     .sidebar-footer label {
       display: flex; align-items: center; gap: 6px;
       font-size: 11px; color: var(--text-tertiary); cursor: pointer;
+    }
+    .sidebar-footer .theme-label { display: block; margin-bottom: 4px; }
+    .sidebar-footer .theme-select {
+      width: 100%; padding: 8px 10px; margin-bottom: 10px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text-primary); font-size: 12px;
+      cursor: pointer; font-family: var(--font); outline: none;
     }
     .sidebar-footer input[type="checkbox"] { accent-color: var(--accent); width: 14px; height: 14px; }
     .sidebar-footer-btn {
@@ -141,7 +121,6 @@
     .toolbar {
       display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
       padding: 0 28px 0px;
-      border-bottom: 1px solid var(--border-light);
       flex-shrink: 0;
     }
     .search-wrap { position: relative; flex: 1 1 240px; max-width: 380px; }
@@ -181,50 +160,49 @@
     }
     .view-toggle button.active { background: var(--card-bg); color: var(--accent-text); }
 
-    /* Bulk actions - always reserved to prevent layout shift */
-    .bulk-bar {
-      display: flex; align-items: center; gap: 10px; padding: 5px 28px;
-      min-height: 32px; background: var(--accent-light); border-bottom: 1px solid #c7d7f0;
-      flex-shrink: 0; visibility: hidden;
+    /* Bulk actions - inline in toolbar, directly next to view toggle */
+    .toolbar-bulk {
+      display: none; align-items: center; gap: 8px;
+      padding-left: 12px; border-left: 1px solid var(--border);
     }
-    .bulk-bar.show { visibility: visible; }
-    .bulk-bar .select-all-btn {
+    .toolbar-bulk.show { display: flex; }
+    .toolbar-bulk .select-all-btn {
       background: none; border: none; color: var(--accent-text); cursor: pointer;
       font-size: 12px; font-family: var(--font); font-weight: 700;
     }
-    .bulk-bar .count { color: var(--text-secondary); font-size: 12px; }
-    .bulk-bar .spacer { flex: 1; }
-    .bulk-bar .bulk-delete {
-      display: flex; align-items: center; gap: 5px; padding: 4px 12px;
-      background: var(--danger-light); border: 1px solid #fecaca;
+    .toolbar-bulk .count { color: var(--text-secondary); font-size: 12px; }
+    .toolbar-bulk .bulk-delete {
+      display: flex; align-items: center; gap: 5px; padding: 4px 10px;
+      background: var(--danger-light); border: 1px solid var(--danger);
       border-radius: 6px; color: var(--danger); cursor: pointer; font-size: 12px;
       font-family: var(--font); font-weight: 600;
     }
-    .bulk-bar .bulk-restore {
-      display: flex; align-items: center; gap: 5px; padding: 4px 12px;
-      background: #d1fae5; border: 1px solid #a7f3d0;
-      border-radius: 6px; color: #065f46; cursor: pointer; font-size: 12px;
+    .toolbar-bulk .bulk-restore {
+      display: flex; align-items: center; gap: 5px; padding: 4px 10px;
+      background: var(--bulk-restore-bg); border: 1px solid var(--bulk-restore-border);
+      border-radius: 6px; color: var(--bulk-restore-text); cursor: pointer; font-size: 12px;
       font-family: var(--font); font-weight: 600;
     }
-    .bulk-bar .bulk-restore:hover { background: #a7f3d0; }
-    .bulk-actions-normal, .bulk-actions-trash { display: flex; align-items: center; gap: 8px; }
+    .toolbar-bulk .bulk-restore:hover { background: var(--bulk-restore-border); }
+    .toolbar-bulk .bulk-actions-normal,
+    .toolbar-bulk .bulk-actions-trash { display: flex; align-items: center; gap: 6px; }
 
     /* Info bar */
     .info-bar {
-      padding: 12px 28px; background: #fffbeb; border-bottom: 1px solid #fde68a;
+      padding: 12px 28px; background: var(--info-bar-bg); border-bottom: 1px solid var(--info-bar-border);
       display: none; align-items: center; gap: 10px;
-      color: #92400e; font-size: 13px; flex-shrink: 0;
+      color: var(--info-bar-text); font-size: 13px; flex-shrink: 0;
     }
     .info-bar.show { display: flex; }
 
     /* ===== BOOKMARK AREA ===== */
     .bookmark-area {
-      flex: 1; overflow-y: auto; padding: 0px 28px 32px;
+      flex: 1; overflow-y: auto; padding: 14px 28px 32px;
       scrollbar-gutter: stable;
     }
     .bookmark-area::-webkit-scrollbar { width: 7px; }
     .bookmark-area::-webkit-scrollbar-track { background: transparent; }
-    .bookmark-area::-webkit-scrollbar-thumb { background: #d1d1d6; border-radius: 4px; }
+    .bookmark-area::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
 
     /* ===== CARD GRID ===== */
     .grid {
@@ -246,7 +224,7 @@
       display: flex; flex-direction: column; gap: 10px;
     }
     .card:hover {
-      border-color: #d0d0d5;
+      border-color: var(--card-hover-border);
       box-shadow: 0 2px 12px rgba(0,0,0,0.06);
     }
     .card.selected { border-color: var(--accent); background: var(--accent-light); }
@@ -288,7 +266,6 @@
       padding: 2px 7px; border-radius: 5px; font-size: 10px; font-weight: 700;
       margin-bottom: -6px; margin-top: 2px;
     }
-
     .x-badge {
       display: inline-flex; align-items: center; gap: 3px;
       background: #f0f0f2; color: #000;
@@ -364,7 +341,7 @@
 
     /* ===== MODAL ===== */
     .modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.25);
+      position: fixed; inset: 0; background: var(--modal-overlay);
       backdrop-filter: blur(6px); display: none; align-items: center;
       justify-content: center; z-index: 1000;
     }
@@ -396,7 +373,7 @@
       font-size: 13px; font-family: var(--font); font-weight: 700;
     }
     .modal-actions .cancel { background: var(--bg); border: 1px solid var(--border); color: var(--text-secondary); }
-    .modal-actions .save { background: var(--accent); border: none; color: #fff; }
+    .modal-actions .save { background: var(--accent); border: none; color: var(--btn-primary-text); }
 
     /* Import modal tweaks */
     .import-tabs {
@@ -439,11 +416,11 @@
     .open-x-bookmarks-btn {
       display: flex; align-items: center; justify-content: center; gap: 8px;
       width: 100%; padding: 14px; margin-top: 8px;
-      background: #f7f7f8; border: 1px solid var(--border);
+      background: var(--x-bg); border: 1px solid var(--border);
       border-radius: 12px; color: var(--text-primary); cursor: pointer;
       font-size: 14px; font-weight: 700; font-family: var(--font); transition: all 0.2s;
     }
-    .open-x-bookmarks-btn:hover { background: var(--bg); border-color: #ccc; }
+    .open-x-bookmarks-btn:hover { background: var(--card-hover); border-color: var(--border); }
 
     .import-dropzones { display: flex; gap: 12px; margin-bottom: 20px; }
     .import-dropzone {
@@ -577,6 +554,16 @@
     </nav>
 
     <div class="sidebar-footer">
+      <label class="theme-label">Theme</label>
+      <select id="themeSelect" class="theme-select">
+        <option value="light">Light</option>
+        <option value="light-sage">Light Sage</option>
+        <option value="light-mint">Light Mint</option>
+        <option value="light-slate">Light Slate</option>
+        <option value="dark-sage">Dark Sage</option>
+        <option value="dark-slate">Dark Slate</option>
+        <option value="dark-mint">Dark Mint</option>
+      </select>
       <label><input type="checkbox" id="autoCapture" checked> Auto-capture X bookmarks</label>
       <button class="sidebar-footer-btn" id="importXBtn">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -609,28 +596,25 @@
         <button class="active" data-view="grid" title="Grid"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></button>
         <button data-view="list" title="List"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></button>
       </div>
-    </div>
-
-    <!-- Bulk actions -->
-    <div class="bulk-bar" id="bulkBar">
-      <button class="select-all-btn" id="selectAllBtn">Select All</button>
-      <span class="count" id="selectedCount">0 selected</span>
-      <div class="spacer"></div>
-      <div class="bulk-actions-normal" id="bulkActionsNormal">
-        <button class="bulk-delete" id="bulkDelete">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-          Delete Selected
-        </button>
-      </div>
-      <div class="bulk-actions-trash" id="bulkActionsTrash" style="display:none;">
-        <button class="bulk-restore" id="bulkRestore">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-          Restore Selected
-        </button>
-        <button class="bulk-delete" id="bulkPermanentDelete">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-          Delete Permanently
-        </button>
+      <div class="toolbar-bulk" id="bulkBar">
+        <button class="select-all-btn" id="selectAllBtn">Select All</button>
+        <span class="count" id="selectedCount">0 selected</span>
+        <div class="bulk-actions-normal" id="bulkActionsNormal">
+          <button class="bulk-delete" id="bulkDelete">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            Delete
+          </button>
+        </div>
+        <div class="bulk-actions-trash" id="bulkActionsTrash" style="display:none;">
+          <button class="bulk-restore" id="bulkRestore">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            Restore
+          </button>
+          <button class="bulk-delete" id="bulkPermanentDelete">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            Delete Permanently
+          </button>
+        </div>
       </div>
     </div>
 
