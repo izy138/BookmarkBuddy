@@ -218,7 +218,7 @@
   --border: #A7C1A8;
   --border-light: #D1D8BE;
   --accent: #819A91;
-  --accent-light: #D1D8BE;
+  --accent-light: #D1D8BE; 
   --accent-text: #3d4f45;
   --fav-color: #c9a227;
   --danger: #c44d4d;
@@ -257,7 +257,7 @@
   --border: #B3C8CF;
   --border-light: #E5E1DA;
   --accent: #89A8B2;
-  --accent-light: #dae3e5;
+  --accent-light:#c7d7d2; /* #dae3e5; */
   --accent-text: #3d5058;
   --fav-color: #b8860b;
   --danger: #c44d4d;

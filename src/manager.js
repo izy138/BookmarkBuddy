@@ -130,7 +130,7 @@ async function loadBookmarks() {
 
   const settings = await chrome.runtime.sendMessage({ type: "GET_SETTINGS" }) || {};
   document.getElementById("autoCapture").checked = settings.autoCapture !== false;
-  const theme = settings.theme || "light";
+  const theme = settings.theme || "light-slate";
   applyTheme(theme);
   const themeSelect = document.getElementById("themeSelect");
   if (themeSelect) themeSelect.value = theme;

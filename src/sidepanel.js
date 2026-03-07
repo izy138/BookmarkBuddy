@@ -74,17 +74,25 @@ function truncate(str, len) {
   return str.slice(0, len).trim() + "…";
 }
 
+function applyTheme(theme) {
+  if (theme === "light") delete document.documentElement.dataset.theme;
+  else document.documentElement.dataset.theme = theme;
+}
+
 async function loadBookmarks() {
+  const settings = await chrome.runtime.sendMessage({ type: "GET_SETTINGS" }) || {};
+  applyTheme(settings.theme || "light-slate");
+
   const data = await chrome.runtime.sendMessage({ type: "GET_ALL_BOOKMARKS" });
   chromeBookmarks = data?.bookmarks || [];
   xPosts = data?.xPosts || [];
   favorites = new Set(chromeBookmarks.filter(b => b.isFavorite).map(b => b.id));
 
   const cats = new Set(chromeBookmarks.map(b => categorize(b.url)));
-  categoryFilterEl.innerHTML = '<option value="All" style="background:#1e293b">All Categories</option>';
+  categoryFilterEl.innerHTML = '<option value="All">All Categories</option>';
   [...cats].sort().forEach(c => {
     const opt = document.createElement("option");
-    opt.value = c; opt.textContent = c; opt.style.background = "#1e293b";
+    opt.value = c; opt.textContent = c;
     categoryFilterEl.appendChild(opt);
   });
 

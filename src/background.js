@@ -26,6 +26,7 @@ chrome.runtime.onInstalled.addListener(() => {
         showNotifications: true,
         defaultView: "grid",
         defaultSort: "newest",
+        theme: "light-slate",
       }
     });
   });
@@ -269,8 +270,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (message.type === "OPEN_SIDE_PANEL") {
-    chrome.sidePanel.open({ windowId: sender.tab.windowId });
-    sendResponse({ status: "opened" });
+    (async () => {
+      let windowId = sender.tab?.windowId;
+      if (!windowId) {
+        const win = await chrome.windows.getLastFocused();
+        windowId = win?.id;
+      }
+      if (windowId) await chrome.sidePanel.open({ windowId });
+      sendResponse({ status: "opened" });
+    })();
     return true;
   }
 
