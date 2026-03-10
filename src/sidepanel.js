@@ -188,7 +188,7 @@ function renderBookmarks() {
           <span class="fallback" style="${domain ? '' : 'display:flex'}">${initial}</span>
         </div>
         <div class="bk-info">
-          <div class="bk-title">${escapeHtml(b.title)}</div>
+          <div class="bk-title bk-title-link" data-action="open-url" data-url="${escapeHtml(b.url)}">${escapeHtml(b.title)}</div>
           <div class="bk-meta">
             <span class="bk-domain">${domain}</span>
             ${isXPost ? '<span class="x-badge">𝕏 Post</span>' : ''}
@@ -259,9 +259,9 @@ bookmarkList.addEventListener("click", e => {
     return;
   }
 
-  const card = e.target.closest(".bookmark-card");
-  if (card) {
-    chrome.tabs.create({ url: card.dataset.url });
+  const titleLink = e.target.closest("[data-action='open-url']");
+  if (titleLink) {
+    chrome.tabs.create({ url: titleLink.dataset.url });
   }
 });
 

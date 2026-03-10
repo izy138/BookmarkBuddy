@@ -352,16 +352,16 @@
 [data-theme="light-mint"] .cat-reference { background: #D1D8BE; color: #3d4f45; }
 [data-theme="light-mint"] .cat-other { background: #A7C1A8; color: #2d3832; }
 
-[data-theme="light-slate"] .cat-streaming { background: #E5E1DA; color: #3d5058; }
-[data-theme="light-slate"] .cat-development { background: #B3C8CF; color: #2d3438; }
-[data-theme="light-slate"] .cat-ai-tools { background: #E5E1DA; color: #4a565c; }
-[data-theme="light-slate"] .cat-education { background: #B3C8CF; color: #2d3438; }
+[data-theme="light-slate"] .cat-streaming { background: #ddeee9; color: #3d5058; }
+[data-theme="light-slate"] .cat-development { background: #ddeee9; color: #2d3438; }
+[data-theme="light-slate"] .cat-ai-tools { background: #ddeee9; color: #4a565c; }
+[data-theme="light-slate"] .cat-education { background: #ddeee9; color: #2d3438; }
 [data-theme="light-slate"] .cat-social { background: #E5E1DA; color: #3d5058; }
-[data-theme="light-slate"] .cat-communication { background: #B3C8CF; color: #2d3438; }
-[data-theme="light-slate"] .cat-shopping { background: #E5E1DA; color: #4a565c; }
-[data-theme="light-slate"] .cat-news { background: #B3C8CF; color: #2d3438; }
-[data-theme="light-slate"] .cat-reference { background: #E5E1DA; color: #3d5058; }
-[data-theme="light-slate"] .cat-other { background: #B3C8CF; color: #2d3438; }
+[data-theme="light-slate"] .cat-communication { background: #ddeee9; color: #2d3438; }
+[data-theme="light-slate"] .cat-shopping { background: #ddeee9; color: #4a565c; }
+[data-theme="light-slate"] .cat-news { background: #ddeee9; color: #2d3438; }
+[data-theme="light-slate"] .cat-reference { background: #ddeee9; color: #3d5058; }
+[data-theme="light-slate"] .cat-other { background: #ddeee9; color: #2d3438; }
 
 /* ===== FOLDER BADGES (theme overrides) ===== */
 
@@ -403,7 +403,7 @@
 [data-theme="light-mint"] .folder-trash { background: #D1D8BE; color: #4a5c52; }
 
 [data-theme="light-slate"] .folder-bookmarks-bar { background: #B3C8CF; color: #2d3438; }
-[data-theme="light-slate"] .folder-other-bookmarks { background: #E5E1DA; color: #3d5058; }
+[data-theme="light-slate"] .folder-other-bookmarks { background: #B3C8CF; color: #3d5058; }
 [data-theme="light-slate"] .folder-mobile-bookmarks { background: #B3C8CF; color: #2d3438; }
-[data-theme="light-slate"] .folder-shopping-list { background: #E5E1DA; color: #4a565c; }
-[data-theme="light-slate"] .folder-trash { background: #E5E1DA; color: #4a565c; }
+[data-theme="light-slate"] .folder-shopping-list { background: #B3C8CF; color: #4a565c; }
+[data-theme="light-slate"] .folder-trash { background: #B3C8CF; color: #4a565c; }

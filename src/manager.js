@@ -298,7 +298,7 @@ function renderCard(b, isXContext = false, isTrash = false) {
           <span class="fallback" style="${domain ? '' : 'display:flex'}">${initial}</span>
         </div>
         <div class="card-text">
-          <div class="card-title">${escapeHtml(b.title)}</div>
+          <div class="card-title card-title-link" data-action="open-url" data-url="${escapeHtml(b.url)}">${escapeHtml(b.title)}</div>
           <div class="card-domain">${domain}</div>
         </div>
       </div>
@@ -428,14 +428,14 @@ grid.addEventListener("click", e => {
     render(); return;
   }
 
-  const action = e.target.closest("[data-action]");
-  if (!action) {
-    const card = e.target.closest(".card");
-    if (card && !e.target.closest(".card-hover-actions") && !e.target.closest(".card-fav-btn") && !e.target.closest(".card-checkbox")) {
-      chrome.tabs.create({ url: card.dataset.url });
-    }
+  const titleLink = e.target.closest("[data-action='open-url']");
+  if (titleLink) {
+    chrome.tabs.create({ url: titleLink.dataset.url });
     return;
   }
+
+  const action = e.target.closest("[data-action]");
+  if (!action) return;
 
   const act = action.dataset.action;
   const id = action.dataset.id;
