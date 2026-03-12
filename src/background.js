@@ -306,6 +306,43 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     ).then(result => sendResponse(result));
     return true;
   }
+
+  if (message.type === "EXPORT_DATA") {
+    (async () => {
+      try {
+        const result = await chrome.storage.local.get(["bb_favorites", "bb_categories", "bb_settings", "bb_trash"]);
+        sendResponse({
+          status: "ok",
+          data: {
+            version: 1,
+            exportedAt: new Date().toISOString(),
+            bb_favorites: result.bb_favorites || [],
+            bb_categories: result.bb_categories || {},
+            bb_settings: result.bb_settings || {},
+            bb_trash: result.bb_trash || {},
+          },
+        });
+      } catch (err) {
+        sendResponse({ status: "error", msg: err?.message || "Storage read failed" });
+      }
+    })();
+    return true;
+  }
+
+  if (message.type === "IMPORT_DATA") {
+    const { data } = message;
+    if (!data || typeof data !== "object") {
+      sendResponse({ status: "error", msg: "Invalid backup file" });
+      return false;
+    }
+    const toSet = {};
+    if (Array.isArray(data.bb_favorites)) toSet.bb_favorites = data.bb_favorites;
+    if (data.bb_categories && typeof data.bb_categories === "object") toSet.bb_categories = data.bb_categories;
+    if (data.bb_settings && typeof data.bb_settings === "object") toSet.bb_settings = data.bb_settings;
+    if (data.bb_trash && typeof data.bb_trash === "object") toSet.bb_trash = data.bb_trash;
+    chrome.storage.local.set(toSet, () => sendResponse({ status: "ok", keys: Object.keys(toSet) }));
+    return true;
+  }
 });
 
 // --- Import X Bookmark (silent, for bulk imports) ---

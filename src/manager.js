@@ -618,6 +618,55 @@ document.querySelectorAll(".import-tab").forEach(tab => {
   });
 });
 
+// --- Export/Import backup (metadata for reinstall) ---
+document.getElementById("exportDataBtn").addEventListener("click", async () => {
+  try {
+    const result = await chrome.storage.local.get(["bb_favorites", "bb_categories", "bb_settings", "bb_trash"]);
+    const data = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      bb_favorites: result.bb_favorites || [],
+      bb_categories: result.bb_categories || {},
+      bb_settings: result.bb_settings || {},
+      bb_trash: result.bb_trash || {},
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `bookmarkbuddy-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    showToast("Backup exported!");
+  } catch (e) {
+    showToast(e?.message || "Export failed");
+  }
+});
+
+document.getElementById("importDataBtn").addEventListener("click", () => {
+  document.getElementById("importDataInput").click();
+});
+
+document.getElementById("importDataInput").addEventListener("change", async (e) => {
+  const file = e.target.files?.[0];
+  e.target.value = "";
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if (!data || typeof data !== "object") throw new Error("Invalid file");
+    const toSet = {};
+    if (Array.isArray(data.bb_favorites)) toSet.bb_favorites = data.bb_favorites;
+    if (data.bb_categories && typeof data.bb_categories === "object") toSet.bb_categories = data.bb_categories;
+    if (data.bb_settings && typeof data.bb_settings === "object") toSet.bb_settings = data.bb_settings;
+    if (data.bb_trash && typeof data.bb_trash === "object") toSet.bb_trash = data.bb_trash;
+    await chrome.storage.local.set(toSet);
+    await loadBookmarks();
+    showToast("Backup restored!");
+  } catch (err) {
+    showToast(err?.message || "Import failed");
+  }
+});
+
 document.getElementById("importXBtn").addEventListener("click", () => {
   parsedLikes = null; likesFileInput.value = ""; likesStatus.textContent = "";
   likesDropzone.classList.remove("has-file"); importStart.disabled = true;
